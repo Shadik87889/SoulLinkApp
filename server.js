@@ -8,7 +8,6 @@ const io = socketIo(server);
 
 app.use(express.static(__dirname + "/public"));
 
-// Explicit route for the home page
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
