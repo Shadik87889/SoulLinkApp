@@ -6,7 +6,6 @@
     <title>WhatsApp Clone</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="style.css" />
-    <!-- Font Awesome CDN for Icons -->
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
@@ -23,7 +22,6 @@
     </div>
 
     <div id="controls">
-      <!-- Video call, Audio call, End call, Mute, Unmute, Screen share buttons with icons -->
       <button id="startVideoCall"><i class="fas fa-video"></i></button>
       <button id="startAudioCall"><i class="fas fa-phone-alt"></i></button>
       <button id="endCall"><i class="fas fa-phone-slash"></i></button>
@@ -51,15 +49,24 @@
       let peerConnection;
       let roomId;
       let isAudioCall = false;
+
       const servers = {
         iceServers: [
+          { urls: "stun:openrelay.metered.ca:80" },
           {
-            urls: "stun:stun.l.google.com:19302", // Google STUN server
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelay",
+            credential: "openrelay",
           },
           {
-            urls: "turn:turnserver.xyz:3478", // FreeTURN TURN server
-            username: "free", // Default username
-            credential: "free", // Default password
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelay",
+            credential: "openrelay",
+          },
+          {
+            urls: "turns:openrelay.metered.ca:443",
+            username: "openrelay",
+            credential: "openrelay",
           },
         ],
       };
@@ -84,10 +91,8 @@
           .getTracks()
           .forEach((track) => peerConnection.addTrack(track, localStream));
 
-        peerConnection.ontrack = (event) => {
-          remoteVideo.srcObject = event.streams[0];
-        };
-
+        peerConnection.ontrack = (event) =>
+          (remoteVideo.srcObject = event.streams[0]);
         peerConnection.onicecandidate = (event) => {
           if (event.candidate) {
             socket.emit("ice-candidate", {
@@ -128,8 +133,7 @@
           const screenStream = await navigator.mediaDevices.getDisplayMedia({
             video: true,
           });
-          const screenTrack = screenStream.getTracks()[0];
-          peerConnection.addTrack(screenTrack, screenStream);
+          peerConnection.addTrack(screenStream.getTracks()[0], screenStream);
           screenShareBtn.disabled = true;
         } catch (err) {
           console.error("Error sharing screen: ", err);
