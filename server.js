@@ -1,22 +1,27 @@
 const express = require("express");
 const http = require("http");
-const { Server } = require("socket.io");
+const socketIo = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+const io = socketIo(server, {
   cors: {
-    origin: "*", // Allow connections from any origin (change for security)
+    origin: "*", // Allows connections from any origin (change for security)
     methods: ["GET", "POST"],
   },
 });
 
-app.use(express.static(__dirname)); // Serve the HTML file
+// Serve static files from public directory
+app.use(express.static(__dirname + "/public"));
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
 
 io.on("connection", (socket) => {
   console.log(`🔗 New user connected: ${socket.id}`);
 
-  // Joining a Room
+  // Joining a room
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
     console.log(`👤 User ${socket.id} joined room: ${roomId}`);
@@ -48,6 +53,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, () =>
-  console.log("🚀 Server running on http://localhost:3000")
-);
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on: http://localhost:${PORT}/index.html`);
+});
